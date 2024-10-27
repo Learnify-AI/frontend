@@ -1,11 +1,14 @@
+from services.config import SummarizeConfig
+
 class SummaryService:
-    
     def __init__(self, model):
         self.model = model
 
-    #Todo:
-    def execute(self,):
-        pass
+    def summarize_text(self, text):
+        prompt = f"{SummarizeConfig.system_instruction}\n{text}"
+        response = self.model.generate_content([prompt])
+        return response.text
+
 
 
 class ChatService:
