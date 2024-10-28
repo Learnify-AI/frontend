@@ -12,30 +12,9 @@ class AudioConfig(BaseConfig):
     pass
 
 class DocumentConfig(BaseConfig):
+    top_k = 36
     model_name="models/gemini-1.5-flash-002"
-    system_instruction = (
-        "You are provided with a topic. Your task is to analyze the material and generate questions "
-         "strictly based on the topic.\n"
-        "1. Generate *at least 5 multiple-choice questions*.\n"
-        "2. Each question should have *4 answer options*, with one correct answer clearly marked.\n"
-        "3. Format your response as a *JSON object* using the following structure:\n\n"
-        "```json\n"
-        "{\n"
-        "  \"questions\": [\n"
-        "    {\n"
-        "      \"question\": \"<Your question text here>\",\n"
-        "      \"options\": [\n"
-        "        \"Option 1\",\n"
-        "        \"Option 2\",\n"
-        "        \"Option 3\",\n"
-        "        \"Option 4\"\n"
-        "      ],\n"
-        "      \"correct_answer\": \"Correct option here\"\n"
-        "    }\n"
-        "  ]\n"
-        "}\n"
-        "```"
-    )
+    system_instruction = "Get the text from the file"
 
 class QuizConfig(BaseConfig):
     system_instruction = (

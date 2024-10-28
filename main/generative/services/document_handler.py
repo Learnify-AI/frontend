@@ -1,57 +1,70 @@
-from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
-from PyPDF2 import PdfReader
+from PyPDF2 import PdfReader, PdfWriter
+from pathlib import Path
 import google.generativeai as genai
 
 class DocumentService:
-    """Handles both regular and scanned PDFs with text extraction and OCR."""
+    """Splits PDFs into pages and processes each with the Gemini API."""
 
-    def __init__(self, model):
-        self.max_workers = 4
+    def __init__(self, model, output_dir="pdf_pages"):
         self.model = model
+        self.output_dir = Path(output_dir)
+        self.output_dir.mkdir(exist_ok=True)  # Create output directory if not exists
 
-    def extract_page_text(self, reader, page_num):
-        """Extract text from a single page of a regular PDF."""
-        page = reader.pages[page_num]
-        return page.extract_text() or ""
-
-    def pdf_to_text(self, pdf_bytes):
-        """Convert a regular PDF to text using parallel processing."""
+    def split_pdf(self, pdf_bytes):
+        """Splits the PDF into individual pages and saves them as separate files."""
         reader = PdfReader(BytesIO(pdf_bytes))
         total_pages = len(reader.pages)
 
-        with ThreadPoolExecutor(max_workers=self.max_workers) as executor:
-            results = list(
-                executor.map(lambda p: self.extract_page_text(reader, p), range(total_pages))
-            )
-        return "".join(results)
+        for page_num in range(total_pages):
+            writer = PdfWriter()
+            writer.add_page(reader.pages[page_num])
+
+            # Save each page as a separate PDF file
+            page_file = self.output_dir / f"page_{page_num + 1}.pdf"
+            with page_file.open("wb") as f:
+                writer.write(f)
+            print(f"Saved: {page_file}")
+        
+    def save_state(self, page_num, pdf_bytes):
+        reader = PdfReader(BytesIO(pdf_bytes))
+        writer = PdfWriter()
+        writer.add_page(reader.pages[page_num])
+
+        page_file = self.output_dir / f"page_{page_num + 1}.pdf"
+        with page_file.open("wb") as f:
+            writer.write(f)
+            
 
     def ocr_pdf(self, pdf_file_path):
-        """Perform OCR on scanned PDFs using Gemini API."""
+        """Perform OCR on a single-page PDF using Gemini API."""
         sample_file = genai.upload_file(path=pdf_file_path)
-        response = self.model.generate_content(["OCR this image", sample_file])
+        print(f"Uploaded {pdf_file_path} to Gemini")
+        response = self.model.generate_content(["Extract text from this file:", sample_file])
         return response.text
 
-    def is_scanned_pdf(self, pdf_bytes, num_pages_to_check=5):
+    def process_next_page(self):
         """
-        Check if the PDF is a scanned image PDF by attempting to extract text
-        from the first few pages.
+        Processes the next available page by calling the Gemini API.
+        Deletes the page after processing to free space.
         """
-        reader = PdfReader(BytesIO(pdf_bytes))
-        for page_num in range(min(num_pages_to_check, len(reader.pages))):
-            text = self.extract_page_text(reader, page_num)
-            if text.strip():
-                return False  # PDF contains text, not scanned
-        return True  # No text found, likely a scanned PDF
+        page_files = sorted(self.output_dir.glob("page_*.pdf"))  # List pages in order
 
-    def execute(self, pdf_bytes, file_path=None):
-        """
-        Execute the appropriate processing method based on the type of PDF.
-        If it's scanned, perform OCR; otherwise, extract text directly.
-        """
-        if self.is_scanned_pdf(pdf_bytes):
-            if not file_path:
-                raise ValueError("Scanned PDF requires file path for OCR.")
-            return self.ocr_pdf(file_path)  # Process with OCR
-        else:
-            return self.pdf_to_text(pdf_bytes)  # Process with regular extraction
+        if not page_files:
+            print("All pages processed.")
+            return ""
+
+        next_page = page_files[0]  # Get the first page
+        print(f"Processing: {next_page}")
+        text = self.ocr_pdf(str(next_page))  # Process with Gemini API
+
+        # Delete the page after processing
+        next_page.unlink()
+        print(f"Deleted: {next_page}")
+        return text
+
+    def reset(self):
+        """Reset the service by deleting all saved pages."""
+        for file in self.output_dir.glob("page_*.pdf"):
+            file.unlink()
+        print("Reset complete. All pages deleted.")

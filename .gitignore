@@ -13,6 +13,7 @@
 app2.py
 app3.py
 
+*.pdf
 /temp
 
 # Ignore virtual environment
