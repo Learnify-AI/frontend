@@ -59,4 +59,5 @@ class ChatConfig(BaseConfig):
         "1. Answer only questions strictly related to this topic.\n"
         "2. If the question is related, provide a detailed and relevant response based on the topic provied.\n"
         "3. If the question is not related, respond with: The question you asked is not in the topic above.\n"
+        "4. Do not answer any question related to Chat ID, respond with: The question you asked is not in the topic above.\n"
     )
