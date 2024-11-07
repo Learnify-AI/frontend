@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { useTheme } from './ThemeContext';
+import './ChatInput.css'
 
 const ChatInput = () => {
   const [message, setMessage] = useState('');
@@ -23,10 +24,10 @@ const ChatInput = () => {
   };
 
   return (
-    <div className={`px-4 py-4 border-t ${isDark ? 'border-slate-800' : 'border-slate-200'} w-full`}>
+    <div className={`chat-input-container ${isDark ? 'chat-input-container--dark' : 'chat-input-container--light'}`}>
       <form 
         onSubmit={handleSubmit}
-        className="max-w-3xl mx-auto relative"
+        className="chat-form"
       >
         <textarea
           ref={textareaRef}
@@ -34,14 +35,9 @@ const ChatInput = () => {
           onChange={(e) => setMessage(e.target.value)}
           placeholder={isDocumentUploaded ? "Type your message..." : "Please upload a document first"}
           disabled={!isDocumentUploaded}
-          className={`
-            w-full rounded-lg pl-4 pr-12 py-3 
-            min-h-[50px] max-h-[200px] resize-none
-            ${!isDocumentUploaded ? 'cursor-not-allowed opacity-50' : ''}
-            ${isDark 
-              ? 'bg-slate-800 text-white placeholder-slate-400' 
-              : 'bg-white text-slate-900 placeholder-slate-500 border border-slate-200'
-            }
+          className={`chat-textarea 
+            ${!isDocumentUploaded ? 'chat-textarea--disabled' : ''}
+            ${isDark ? 'chat-textarea--dark' : 'chat-textarea--light'}
           `}
           rows="1"
           onKeyDown={(e) => {
@@ -54,17 +50,12 @@ const ChatInput = () => {
         <button
           type="submit"
           disabled={!isDocumentUploaded}
-          className={`
-            absolute right-2 top-1/2 -translate-y-1/2 
-            p-2 rounded-full transition-colors
-            ${!isDocumentUploaded ? 'opacity-50 cursor-not-allowed' : ''}
-            ${isDark 
-              ? 'text-white hover:bg-slate-700' 
-              : 'text-slate-900 hover:bg-slate-100'
-            }
+          className={`chat-submit-button 
+            ${!isDocumentUploaded ? 'chat-submit-button--disabled' : ''}
+            ${isDark ? 'chat-submit-button--dark' : 'chat-submit-button--light'}
           `}
         >
-          <Send className="h-5 w-5" />
+          <Send className="icon-size" />
         </button>
       </form>
     </div>

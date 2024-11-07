@@ -12,13 +12,13 @@ const ProfileButton = ({ isOpen }) => {
       aria-label="Profile Settings"
     >
       {/* Profile Icon/Avatar */}
-      <div className="relative">
+      {/* <div className="relative">
         <div className={`h-6 w-6 rounded-full flex items-center justify-center
           ${isDark ? 'bg-slate-700' : 'bg-slate-200'}`}>
           <User className={`h-4 w-4 ${isDark ? 'text-slate-300' : 'text-slate-600'}`} />
         </div>
         <div className="absolute bottom-0 right-0 h-2 w-2 rounded-full bg-green-500 border-2 border-slate-900" />
-      </div>
+      </div> */}
 
       {/* Profile Info - Only shown when sidebar is open */}
       {isOpen && (
@@ -33,13 +33,13 @@ const ProfileButton = ({ isOpen }) => {
       )}
 
       {/* Hover tooltip - Only shown when sidebar is collapsed */}
-      {!isOpen && (
+      {/* {!isOpen && (
         <div className={`absolute left-full ml-2 invisible group-hover:visible 
           ${isDark ? 'bg-slate-800' : 'bg-white border border-slate-200'} 
           text-sm py-1 px-2 rounded whitespace-nowrap z-50`}>
           Profile Settings
         </div>
-      )}
+      )} */}
     </button>
   );
 };

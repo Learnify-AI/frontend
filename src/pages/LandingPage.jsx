@@ -1,13 +1,13 @@
-import Navbar from "./components/Navbar"
-import HeroSection from "./components/HeroSection"
-import KeyFeatures from "./components/KeyFeatures"
-import Features2 from "./components/Features2"
-import Pricing from "./components/Pricing"
-import Testimonials from "./components/Testimonials"
-import Footer from "./components/Footer"
-import CTA from "./components/CTA"
+import Navbar from "../components/Navbar"
+import HeroSection from "../components/HeroSection"
+import KeyFeatures from "../components/KeyFeatures"
+import Features2 from "../components/Features2"
+import Pricing from "../components/Pricing"
+import Testimonials from "../components/Testimonials"
+import Footer from "../components/Footer"
+import CTA from "../components/CTA"
 
-const App = () => {
+const LandingPage = () => {
   return (
     <div className="relative min-h-screen w-full">
       {/* Fixed background gradient */}
@@ -30,4 +30,4 @@ const App = () => {
   )
 }
 
-export default App
+export default LandingPage
