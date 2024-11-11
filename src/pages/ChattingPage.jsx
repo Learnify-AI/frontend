@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
 import Sidebar from '../components/sidebar';
 import ChatInput from '../components/ChatInput';
-import UploadSection from '../components/UploadSection';
 import ThemeToggle from '../components/ThemeToggle';
 import { useTheme } from '../components/ThemeContext';
 import './NewChatPage.css'
+import './ChattingPage.css'
+import ChatDisplay from '../components/ChatDisplay';
 
 
 const NewChat = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 800);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
   const { isDark } = useTheme();
+  const [messages, setMessages] = useState([]);
+
+  
   
   // Handle scroll-based sidebar open
   useEffect(() => {
@@ -53,8 +57,9 @@ const NewChat = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  
   return (
-    <div className={`flex h-screen ${isDark ? 'bg-dark' : 'bg-light'}`}>
+    <div className={`flex h-screen main-screen ${isDark ? 'bg-dark' : 'bg-light'}`}>
       <div className={"hamburger"} onClick={()=>setIsMobileSidebarOpen(!isMobileSidebarOpen)}>
             ☰
           </div>
@@ -72,14 +77,30 @@ const NewChat = () => {
       <main 
         className="main"
       >
-        
+        <div className="chatting-container">
+          {/* The chatting container needs to scroll down while the new chats come in */}
         {/* Content Area */}
-        <div className="flex-1 overflow-auto">
-          {/* <UploadSection /> */}
+        <ChatDisplay messages={messages} />
+        {/* Chat Input */}
+        <div className={`input-box ${isDark? 'dark':'light'}`}>
+        <ChatInput addMessage={(text, user)=>{
+          setMessages((prevMessages) => [
+            ...prevMessages,
+            { id: prevMessages.length + 1, text, user },
+          ])
+          if (user === 'User 2') {
+            setTimeout(() => {
+              setMessages((prevMessages) => [
+                ...prevMessages,
+                { id: prevMessages.length + 1, text: 'Welcome to the chat', user: 'User 1' },
+              ]);
+            }, 500); // Delay for more natural response timing
+          }
+        }} />
         </div>
 
-        {/* Chat Input */}
-        <ChatInput />
+        </div>
+        
       </main>
     </div>
   );

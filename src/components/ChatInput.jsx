@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { useTheme } from './ThemeContext';
-import './ChatInput.css'
+import './ChatInput.css';
 
-const ChatInput = () => {
+const ChatInput = ({ addMessage }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef(null);
   const { isDark } = useTheme();
@@ -19,21 +19,19 @@ const ChatInput = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     if (!message.trim() || !isDocumentUploaded) return;
-    console.log('Sending message:', message);
+
+    addMessage(message, 'User 2'); // Send user message to parent
     setMessage('');
   };
 
   return (
     <div className={`chat-input-container ${isDark ? 'chat-input-container--dark' : 'chat-input-container--light'}`}>
-      <form 
-        onSubmit={handleSubmit}
-        className="chat-form"
-      >
+      <form onSubmit={handleSubmit} className="chat-form">
         <textarea
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={isDocumentUploaded ? "Type your message..." : "Please upload a document first"}
+          placeholder={isDocumentUploaded ? 'Type your message...' : 'Please upload a document first'}
           disabled={!isDocumentUploaded}
           className={`chat-textarea 
             ${!isDocumentUploaded ? 'chat-textarea--disabled' : ''}

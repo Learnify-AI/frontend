@@ -1,0 +1,26 @@
+.chatting-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100vh;
+    overflow-y: scroll;
+    padding-bottom: 4em;
+}
+.main{
+    position: relative;
+    overflow-y: hidden;
+}
+
+.input-box {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+.input-box.dark {
+    background-color: #17212e;
+}
+
+.input-box.light {
+    background-color: white;
+}
