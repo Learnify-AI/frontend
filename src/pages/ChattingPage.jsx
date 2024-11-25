@@ -1,109 +1,89 @@
-import { useState, useEffect } from 'react';
-import Sidebar from '../components/sidebar';
+// ChattingPage.jsx
+import { useState, useEffect, useCallback } from 'react';
+import { useParams, useLocation } from 'react-router-dom';
 import ChatInput from '../components/ChatInput';
-import ThemeToggle from '../components/ThemeToggle';
 import { useTheme } from '../components/ThemeContext';
-import './NewChatPage.css'
-import './ChattingPage.css'
 import ChatDisplay from '../components/ChatDisplay';
+import { db } from '../firebase'; // Firebase Firestore instance
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
+import {
+  doc,
+  getDoc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+} from 'firebase/firestore';
+import './NewChatPage.css';
+import './ChattingPage.css';
 
-
-const NewChat = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 800);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
+const Chatting = () => {
+  const { id } = useParams();
+  const { state } = useLocation();
   const { isDark } = useTheme();
   const [messages, setMessages] = useState([]);
+  const [userId, setUserId] = useState(null);
 
-  
-  
-  // Handle scroll-based sidebar open
+  // Listen for authentication state changes to get the userId
   useEffect(() => {
-    const handleScroll = () => {
-      if (!isSidebarOpen && window.innerWidth >= 768) {
-        const mouseX = window.mousemoveX || 0;
-        if (mouseX <= 50) { // When mouse is within 50px of left edge
-          setIsSidebarOpen(true);
-        }
+    const auth = getAuth();
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUserId(user.uid);
       }
-    };
+    });
 
-    const handleMouseMove = (e) => {
-      window.mousemoveX = e.clientX;
-      if (!isSidebarOpen && window.innerWidth >= 768) {
-        if (e.clientX <= 50) { // When mouse is within 50px of left edge
-          setIsSidebarOpen(true);
-        }
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [isSidebarOpen]);
-
-  // Handle window resize
-  useEffect(() => {
-    const handleResize = () => {
-      if (window.innerWidth >= 768) {
-        setIsSidebarOpen(true);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => unsubscribe();
   }, []);
 
-  
+  const fetchMessages = useCallback(async () => {
+    if (!userId || !id) return;
+
+    const chatDoc = doc(db, 'users', userId, 'chatSessions', id);
+    const chatSnap = await getDoc(chatDoc);
+
+    if (chatSnap.exists()) {
+      setMessages(chatSnap.data().messages || []);
+    } else if (state?.initialMessage) {
+      const initialMessages = [
+        { id: 1, text: state.initialMessage, user: 'User 2' },
+        { id: 2, text: 'Welcome to the chat', user: 'User 1' },
+      ];
+      await setDoc(chatDoc, { messages: initialMessages });
+      setMessages(initialMessages);
+    }
+  }, [id, state, userId]);
+
+  // Add a message to the chat
+  const addMessage = useCallback(
+    async (text, user) => {
+      const newMessage = { id: messages.length + 1, text, user };
+      const chatDoc = doc(db, 'chats', id);
+
+      setMessages((prevMessages) => [...prevMessages, newMessage]);
+
+      await updateDoc(chatDoc, { messages: arrayUnion(newMessage) });
+    },
+    [id, messages]
+  );
+
+  // Fetch user chats and messages on mount or when userId changes
+  useEffect(() => {
+    if (userId) {
+      fetchMessages();
+    }
+  }, [fetchMessages, userId]);
+
   return (
-    <div className={`flex h-screen main-screen ${isDark ? 'bg-dark' : 'bg-light'}`}>
-      <div className={"hamburger"} onClick={()=>setIsMobileSidebarOpen(!isMobileSidebarOpen)}>
-            ☰
-          </div>
-      {/* Sidebar */}
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        isMobileOpen={isMobileSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onMobileClose={() => setIsMobileSidebarOpen(false)}
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-        <ThemeToggle isSidebarOpen={false}/>
-
-      {/* Main Content */}
-      <main 
-        className="main"
-      >
+    
+      <main className="main">
         <div className="chatting-container">
-          {/* The chatting container needs to scroll down while the new chats come in */}
-        {/* Content Area */}
-        <ChatDisplay messages={messages} />
-        {/* Chat Input */}
-        <div className={`input-box ${isDark? 'dark':'light'}`}>
-        <ChatInput addMessage={(text, user)=>{
-          setMessages((prevMessages) => [
-            ...prevMessages,
-            { id: prevMessages.length + 1, text, user },
-          ])
-          if (user === 'User 2') {
-            setTimeout(() => {
-              setMessages((prevMessages) => [
-                ...prevMessages,
-                { id: prevMessages.length + 1, text: 'Welcome to the chat', user: 'User 1' },
-              ]);
-            }, 500); // Delay for more natural response timing
-          }
-        }} />
+          <ChatDisplay messages={messages} />
+          <div className={`input-box ${isDark ? 'dark' : 'light'}`}>
+            <ChatInput addMessage={addMessage} isChatting={true} />
+          </div>
         </div>
-
-        </div>
-        
       </main>
-    </div>
   );
 };
 
-export default NewChat;
+export default Chatting;

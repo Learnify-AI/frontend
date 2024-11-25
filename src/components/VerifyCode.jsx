@@ -1,5 +1,5 @@
 // src/components/VerifyCode.jsx
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const VerifyCode = () => {
@@ -176,7 +176,7 @@ const VerifyCode = () => {
         </form>
 
         <div className="text-center text-sm">
-          <span className="text-gray-500">Didn't receive the code? </span>
+          <span className="text-gray-500">Didn&apos;t receive the code? </span>
           <button 
             type="button"
             onClick={handleResend}

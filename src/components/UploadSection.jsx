@@ -3,6 +3,7 @@ import { useTheme } from './ThemeContext';
 import { Upload } from 'lucide-react';
 import './UploadSection.css';
 
+// eslint-disable-next-line react/prop-types
 const AnimatedButton = ({ children, onClick, disabled }) => {
   const { isDark } = useTheme();
 
@@ -19,7 +20,8 @@ const AnimatedButton = ({ children, onClick, disabled }) => {
   );
 };
 
-const UploadSection = ({ onDocumentUpload, isSidebarOpen }) => {
+// eslint-disable-next-line react/prop-types
+const UploadSection = ({ onDocumentUpload }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
@@ -111,7 +113,8 @@ const UploadSection = ({ onDocumentUpload, isSidebarOpen }) => {
             <div className="upload-placeholder">
               <p className="upload-placeholder-title">Drop your documents here</p>
               <p className="upload-placeholder-subtitle">or click to browse</p>
-              <p className="upload-file-support">Supports PDF, DOC, TXT files</p>
+              <p className="upload-file-support">Supports PDF, DOC, TXT files and</p>
+              <p className="upload-file-support">images with text content.</p>
             </div>
           )}
         </div>
@@ -119,16 +122,16 @@ const UploadSection = ({ onDocumentUpload, isSidebarOpen }) => {
         {/* Action Buttons */}
         <div className="action-buttons-container">
           <AnimatedButton
+            onClick={() => console.log('Chat clicked')}
+            disabled={!localStorage.getItem('uploadedDocument')}
+          >
+            Chat with Doc
+          </AnimatedButton>
+          <AnimatedButton
             onClick={() => console.log('Summary clicked')}
             disabled={!localStorage.getItem('uploadedDocument')}
           >
-            Summary
-          </AnimatedButton>
-          <AnimatedButton
-            onClick={() => console.log('Quiz clicked')}
-            disabled={!localStorage.getItem('uploadedDocument')}
-          >
-            Quiz
+            Get Summary
           </AnimatedButton>
         </div>
       </div>

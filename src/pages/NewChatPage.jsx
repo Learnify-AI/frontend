@@ -1,18 +1,17 @@
+// NewChatPage.jsx
 import { useState, useEffect } from 'react';
-import Sidebar from '../components/sidebar';
+import { useNavigate } from 'react-router-dom';
 import ChatInput from '../components/ChatInput';
 import UploadSection from '../components/UploadSection';
-import ThemeToggle from '../components/ThemeToggle';
-import { useTheme } from '../components/ThemeContext';
-import './NewChatPage.css'
 
+import './NewChatPage.css';
 
 const NewChat = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(window.innerWidth >= 800);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-  const { isDark } = useTheme();
-  
-  // Handle scroll-based sidebar open
+
+  // Fetch chat sessions for the user
+
+  // Add event listeners for scroll, resize, and mouse move
   useEffect(() => {
     const handleScroll = () => {
       if (!isSidebarOpen && window.innerWidth >= 768) {
@@ -32,56 +31,39 @@ const NewChat = () => {
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
-    document.addEventListener('mousemove', handleMouseMove);
-    
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      document.removeEventListener('mousemove', handleMouseMove);
-    };
-  }, [isSidebarOpen]);
-
-  // Handle window resize
-  useEffect(() => {
     const handleResize = () => {
       if (window.innerWidth >= 768) {
         setIsSidebarOpen(true);
       }
     };
 
+    window.addEventListener('scroll', handleScroll);
+    document.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      document.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [isSidebarOpen]);
+
+  const navigate = useNavigate();
+
+  // Function to start a new chat
+  const startNewChat = (initialMessage) => {
+    const chatId = Date.now(); // Create unique ID for the new chat
+    console.log(initialMessage);
+    navigate(`/chat/${chatId}`, { state: { initialMessage } });
+  };
 
   return (
-    <div className={`flex h-screen ${isDark ? 'bg-dark' : 'bg-light'}`}>
-      <div className={"hamburger"} onClick={()=>setIsMobileSidebarOpen(!isMobileSidebarOpen)}>
-            ☰
-          </div>
-      {/* Sidebar */}
-      <Sidebar 
-        isOpen={isSidebarOpen} 
-        isMobileOpen={isMobileSidebarOpen}
-        onClose={() => setIsSidebarOpen(false)}
-        onMobileClose={() => setIsMobileSidebarOpen(false)}
-        toggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-      />
-        <ThemeToggle isSidebarOpen={false}/>
-
-      {/* Main Content */}
-      <main 
-        className="main"
-      >
-        
-        {/* Content Area */}
+      <main className="main">
         <div className="flex-1 overflow-auto">
           <UploadSection />
         </div>
-
-        {/* Chat Input */}
-        <ChatInput />
+        <ChatInput addMessage={startNewChat} isChatting={false} />
       </main>
-    </div>
   );
 };
 

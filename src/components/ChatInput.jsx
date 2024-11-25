@@ -3,11 +3,12 @@ import { Send } from 'lucide-react';
 import { useTheme } from './ThemeContext';
 import './ChatInput.css';
 
-const ChatInput = ({ addMessage }) => {
+// eslint-disable-next-line react/prop-types
+const ChatInput = ({ addMessage, isChatting }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef(null);
   const { isDark } = useTheme();
-  const isDocumentUploaded = !!localStorage.getItem('uploadedDocument');
+  const isDocumentUploaded = true;
 
   useEffect(() => {
     if (textareaRef.current) {
@@ -18,9 +19,12 @@ const ChatInput = ({ addMessage }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!message.trim() || !isDocumentUploaded) return;
+    if (!message.trim()) return;
 
-    addMessage(message, 'User 2'); // Send user message to parent
+    addMessage(message, 'User 2');
+    if(isChatting){
+      addMessage("Hey welcome to the chat", 'User 1'); 
+    } 
     setMessage('');
   };
 
@@ -31,10 +35,8 @@ const ChatInput = ({ addMessage }) => {
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={isDocumentUploaded ? 'Type your message...' : 'Please upload a document first'}
-          disabled={!isDocumentUploaded}
+          placeholder={isDocumentUploaded ? 'Attach or paste file here' : 'Please upload a document first'}
           className={`chat-textarea 
-            ${!isDocumentUploaded ? 'chat-textarea--disabled' : ''}
             ${isDark ? 'chat-textarea--dark' : 'chat-textarea--light'}
           `}
           rows="1"
@@ -47,9 +49,8 @@ const ChatInput = ({ addMessage }) => {
         />
         <button
           type="submit"
-          disabled={!isDocumentUploaded}
+          disabled={false}
           className={`chat-submit-button 
-            ${!isDocumentUploaded ? 'chat-submit-button--disabled' : ''}
             ${isDark ? 'chat-submit-button--dark' : 'chat-submit-button--light'}
           `}
         >

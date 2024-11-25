@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { auth } from '../firebase';
 import { 
@@ -145,7 +145,7 @@ const VerifyEmail = () => {
           </button>
 
           <div className="text-center text-sm">
-            <span className="text-gray-500">Didn't receive the email? </span>
+            <span className="text-gray-500">Didn&apos;t receive the email? </span>
             <button 
               onClick={handleResend}
               disabled={resendDisabled}
