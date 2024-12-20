@@ -1,7 +1,12 @@
 import { useRef, useState } from 'react';
 import { useTheme } from './ThemeContext';
 import { Upload } from 'lucide-react';
+import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom'; // Import useNavigate
+
 import './UploadSection.css';
+
+const socket = io('https://backend-368k.onrender.com');
 
 // eslint-disable-next-line react/prop-types
 const AnimatedButton = ({ children, onClick, disabled }) => {
@@ -20,13 +25,16 @@ const AnimatedButton = ({ children, onClick, disabled }) => {
   );
 };
 
-// eslint-disable-next-line react/prop-types
-const UploadSection = ({ onDocumentUpload }) => {
+const UploadSection = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
+  const [documentPreview, setDocumentPreview] = useState(null);
+  const [isPreviewVisible, setIsPreviewVisible] = useState(false); // State for preview visibility
+  const [isSummarizing, setIsSummarizing] = useState(false); // Summarizing state
   const fileInputRef = useRef(null);
   const { isDark } = useTheme();
+  const navigate = useNavigate(); // Initialize navigate
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -48,29 +56,66 @@ const UploadSection = ({ onDocumentUpload }) => {
     setIsUploading(true);
     setUploadProgress(0);
 
-    const reader = new FileReader();
-    reader.onprogress = (event) => {
-      if (event.lengthComputable) {
-        const progress = (event.loaded / event.total) * 100;
-        setUploadProgress(progress);
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('page_start', 1);
+    formData.append('page_end', 10);
+    formData.append('total_pages_mark', 10);
+
+    socket.on('processing_progress', (data) => {
+      setUploadProgress(data.progress);
+    });
+
+    try {
+      const response = await fetch('https://backend-368k.onrender.com/extract-multiple-page-from-document', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload and process document');
       }
-    };
 
-    reader.onload = async (event) => {
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const data = await response.json();
+      localStorage.setItem('uploadedDocument', data.text); // Store extracted text
+      localStorage.setItem('documentName', file.name);
 
-      try {
-        localStorage.setItem('uploadedDocument', event.target.result);
-        localStorage.setItem('documentName', file.name);
-        setIsUploading(false);
-        onDocumentUpload(true);
-      } catch (error) {
-        console.error('Error storing document:', error);
-        setIsUploading(false);
+      setDocumentPreview(data.text); // Update preview content
+      setUploadProgress(100);
+      setIsUploading(false);
+    } catch (error) {
+      console.error('Error uploading document:', error);
+      setIsUploading(false);
+    }
+  };
+
+  const handleSummarize = async () => {
+    setIsSummarizing(true);
+
+    const documentText = localStorage.getItem('uploadedDocument');
+    try {
+      const response = await fetch('https://backend-368k.onrender.com/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text: documentText }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to summarize the document');
       }
-    };
 
-    reader.readAsDataURL(file);
+      const summary = await response.json();
+      console.log(summary)
+      localStorage.setItem('summary', summary.summary);
+      const chatId = Date.now(); // Create unique ID for the new chat
+    navigate(`/chat/${chatId}`, { state: { initialMessage: summary.summary, isSummary: true } }); // Store summary for /chat page
+    } catch (error) {
+      console.error('Error summarizing document:', error);
+    } finally {
+      setIsSummarizing(false);
+    }
   };
 
   return (
@@ -78,7 +123,6 @@ const UploadSection = ({ onDocumentUpload }) => {
       <div className="upload-section-inner">
         <h1 className="upload-title">What Do You Want To Learn Today? Let&apos;s Help you get started</h1>
 
-        {/* Upload Area */}
         <div
           className={`upload-area ${isDragging ? 'upload-area-dragging' : ''} ${
             isDark ? 'upload-area-dark' : 'upload-area-light'
@@ -119,19 +163,51 @@ const UploadSection = ({ onDocumentUpload }) => {
           )}
         </div>
 
-        {/* Action Buttons */}
+        {/* Overlay Preview Trigger */}
+        {documentPreview && (
+          <>
+            <button
+              className="preview-button"
+              onClick={() => setIsPreviewVisible(true)}
+            >
+              Preview Document
+            </button>
+            {isPreviewVisible && (
+              <div className="preview-overlay">
+                <div className="preview-content">
+                  <h2>Preview of {localStorage.getItem('documentName')}</h2>
+                  <textarea
+                    className="preview-textarea"
+                    value={documentPreview}
+                    readOnly
+                  />
+                  <button
+                    className="close-preview-button"
+                    onClick={() => setIsPreviewVisible(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+
         <div className="action-buttons-container">
           <AnimatedButton
-            onClick={() => console.log('Chat clicked')}
+            onClick={() => {
+              const chatId = Date.now();
+              navigate(`/chat/${chatId}`);
+            }}
             disabled={!localStorage.getItem('uploadedDocument')}
           >
             Chat with Doc
           </AnimatedButton>
           <AnimatedButton
-            onClick={() => console.log('Summary clicked')}
-            disabled={!localStorage.getItem('uploadedDocument')}
+            onClick={handleSummarize}
+            disabled={!localStorage.getItem('uploadedDocument') || isSummarizing}
           >
-            Get Summary
+            {isSummarizing ? 'Summarizing...' : 'Get Summary'}
           </AnimatedButton>
         </div>
       </div>

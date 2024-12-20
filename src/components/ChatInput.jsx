@@ -4,7 +4,7 @@ import { useTheme } from './ThemeContext';
 import './ChatInput.css';
 
 // eslint-disable-next-line react/prop-types
-const ChatInput = ({ addMessage, isChatting }) => {
+const ChatInput = ({ addMessage }) => {
   const [message, setMessage] = useState('');
   const textareaRef = useRef(null);
   const { isDark } = useTheme();
@@ -22,9 +22,6 @@ const ChatInput = ({ addMessage, isChatting }) => {
     if (!message.trim()) return;
 
     addMessage(message, 'User 2');
-    if(isChatting){
-      addMessage("Hey welcome to the chat", 'User 1'); 
-    } 
     setMessage('');
   };
 
@@ -35,7 +32,7 @@ const ChatInput = ({ addMessage, isChatting }) => {
           ref={textareaRef}
           value={message}
           onChange={(e) => setMessage(e.target.value)}
-          placeholder={isDocumentUploaded ? 'Attach or paste file here' : 'Please upload a document first'}
+          placeholder={isDocumentUploaded ? 'Chat with your document here' : 'Please upload a document first'}
           className={`chat-textarea 
             ${isDark ? 'chat-textarea--dark' : 'chat-textarea--light'}
           `}

@@ -12,6 +12,8 @@
     min-height: 100vh;
     width: 100%;
   }
+
+  
   
   /* Mobile Overlay */
   /* .sidebar-overlay {
@@ -71,6 +73,55 @@
   .sidebar-header img {
     border-radius: 50%;
   }
+
+
+/* Scrollbar Styles for Sidebar */
+.sidebar-content::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.sidebar-content::-webkit-scrollbar-thumb {
+  background-color: #6b7280; /* Color of the scrollbar thumb */
+  border-radius: 4px; /* Rounded edges for the thumb */
+}
+
+.sidebar-content::-webkit-scrollbar-thumb:hover {
+  background-color: #374151; /* Color when hovering */
+}
+
+.sidebar-content::-webkit-scrollbar-track {
+  background: transparent; /* Hides the scrollbar track */
+}
+
+/* Scrollbar styles for dark mode */
+.sidebar-dark .sidebar-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-dark .sidebar-content::-webkit-scrollbar-thumb {
+  background-color: #374151;
+}
+
+.sidebar-dark .sidebar-content::-webkit-scrollbar-thumb:hover {
+  background-color: #1f2937;
+}
+
+.sidebar-dark .sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Scrollbar styles for Firefox */
+.sidebar-content {
+  scrollbar-width: thin; /* Makes the scrollbar thinner */
+  scrollbar-color: #6b7280 transparent; /* Thumb color and no track color */
+}
+
+.sidebar-dark .sidebar-content {
+  scrollbar-color: #374151 transparent;
+}
+
+
+
   .logo {
     height: 2rem;
   }
@@ -132,10 +183,12 @@
   /* Main Sidebar Content */
   .sidebar-content {
     flex: 1;
-    overflow-y: auto;
   }
   .recent-chats {
+    display: flex;
+    flex-direction: column;
     margin-top: 2em;
+    flex: 1;
   }
   .recent-chats-title {
     font-size: 0.875rem;
@@ -146,7 +199,9 @@
     color: #e6e8ea;
   }
   .chat-items {
+    height: 500px;
     margin-top: 0.5rem;
+    overflow-y: auto;
     gap: 0.25rem;
   }
   .chat-items ul li {

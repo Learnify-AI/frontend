@@ -62,7 +62,7 @@ const NewChat = () => {
         <div className="flex-1 overflow-auto">
           <UploadSection />
         </div>
-        <ChatInput addMessage={startNewChat} isChatting={false} />
+        <ChatInput addMessage={startNewChat} />
       </main>
   );
 };
